@@ -27,7 +27,7 @@ def addSQLVenue(venue):
 def addSQLBeer(beer,brewery):
     data_beer = {'bid': int(beer['bid']), 'beer_name': beer['beer_name'], 'brewery_name': brewery['brewery_name'], 'brewery_id': brewery['brewery_id'], 'brewery_slug': brewery['brewery_slug'], 'style': beer['beer_style'], 'abv': beer['beer_abv']}
 
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
+    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb', charset='utf8') #host, user, password, #database
 
     with con:
         cur = con.cursor()
@@ -35,7 +35,7 @@ def addSQLBeer(beer,brewery):
         cur.execute(add_beer, data_beer)
         con.commit()
 
-def addSQLBeerList(checkin):
+def addSQLCheckin(checkin):
     mytime =  checkin['created_at']
     mydate = datetime.datetime.strptime(mytime, "%a, %d %b %Y %X +0000")
 
@@ -45,56 +45,101 @@ def addSQLBeerList(checkin):
 
     with con:
         cur = con.cursor()
-        add_checkin = "INSERT INTO beer_list(venueid,beerid, checkin_time, checkin_id) VALUES(%s, %s, %s, %s)"
+        add_checkin = "INSERT INTO checkin(venueid,beerid, checkin_time, checkin_id) VALUES(%s, %s, %s, %s)"
         cur.execute(add_checkin, data_checkin)
         con.commit()
 
 
 def getSQLBeer(beerid):
-
     con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
 
     beer = {}
 
     with con: 
         cur = con.cursor()
-        cur.execute("SELECT * FROM beer WHERE bid=%s", beerid)
-        rows = cur.fetchall()
-        keys = ['id', 'bid','beer_name','brewery_name', 'brewery_id', 'brewery_slug', 'style','abv']
-        beer = dict(zip(keys, rows))
+        nonNull = cur.execute("SELECT * FROM beer WHERE bid=%s", beerid)
+        row = cur.fetchone()
+        if nonNull:
+            keys = ['id', 'bid','beer_name','brewery_name', 'brewery_id', 'brewery_slug', 'style','abv']
+            beer = dict(zip(keys, row))
 
     return beer
 
 def getSQLVenue(venueid):
-
     con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
 
     venue = {}
 
     with con: 
         cur = con.cursor()
-        cur.execute("SELECT * FROM venue WHERE venueid=%s", venueid)
-        rows = cur.fetchall()
-        keys = ['venue_id','venue_name','primary_category', 'foursquare_url','venue_address', 'venue_state', 'venue_city', 'lat', 'lng']
-        venue = dict(zip(keys, rows))
+        nonNull = cur.execute("SELECT * FROM venue WHERE venueid=%s", venueid)
+        row = cur.fetchone()
+        if nonNull:    
+            keys = ['venue_id','venue_name','primary_category', 'foursquare_url','venue_address', 'venue_state', 'venue_city', 'lat', 'lng']
+            venue = dict(zip(keys, row))
 
     return venue
 
-def getSQLBeerList(venueid, beerid):
-
+def getSQLCheckin(checkin_id):
     con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
 
-    beerList = {}
+    checkin = {}
 
     with con: 
         cur = con.cursor()
-        cur.execute("SELECT beerid FROM beer_list WHERE venueid=%s AND beerid=%s", [venueid, beerid]) #change this to a join
-        rows = cur.fetchall()
-        if len(rows) > 0:
+        nonNull = cur.execute("SELECT * FROM checkin WHERE checkin_id=%s", checkin_id)
+        row = cur.fetchone()
+        if nonNull:
             keys = ['venue_id','beer_id','checkin_time', 'checkin_id'] 
-            beerList = dict(zip(keys,rows))
+            checkin = dict(zip(keys,row))
+        
+    return checkin
+
+
+def getSQLBeerList(venueid):
+    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
+
+    beerList = []
+
+    with con: 
+        cur = con.cursor()
+        cur.execute("SELECT DISTINCT venue.venueid, beerid FROM checkin JOIN venue ON checkin.venueid=venue.venueid WHERE venue.venueid=%s", venueid)
+        rows = cur.fetchall()
+        beerList = rows
         
     return beerList
+
+def updateDB(checkins):
+    nearbyVenues = []
+
+    for check in checkins:
+        venue = check['venue']
+        beer = check['beer']
+        brewery = check['brewery']
+
+        venueid = venue['venue_id']
+        beerid = beer['bid']
+
+        #see if beer is in the db
+        sqlBeer = getSQLBeer(beerid)
+        if len(sqlBeer) == 0: #not there, add it
+            addSQLBeer(beer, brewery)
+
+        #find venue
+        sqlVenue = getSQLVenue(venueid)
+        if len(sqlVenue) == 0: #not there, add it
+            addSQLVenue(venue)
+
+        #see if checkin is in the db
+        sqlCheckin = getSQLCheckin(check['checkin_id'])
+        if len(sqlCheckin) == 0: #not there, add it
+            addSQLCheckin(check)
+
+        #keep track of nearby venues
+        nearbyVenues.append(venueid)
+
+    return nearbyVenues
+    
 
     
 def getPubFeed(lat, lng, **kwargs):
@@ -113,6 +158,21 @@ def getPubFeed(lat, lng, **kwargs):
 
     return r.content
 
+def getVenueFeed(venueid, **kwargs):
+    global ratelimit_CURRENT
+
+    venuefeed = "/venue/checkins/" + str(venueid)
+    payload = {}
+
+    payload.update(kwargs)
+    payload.update(credentials)
+    
+    r = requests.get(apiurl+venuefeed, params=payload)
+    assert(r.status_code == requests.codes.ok)
+
+    ratelimit_CURRENT = r.headers['x-ratelimit-remaining']
+
+    return r.content
 
 lat = '40.739627'
 lng = '-73.988400'
@@ -132,6 +192,12 @@ print ratelimit_CURRENT
 resp = output['response']
 checkins = resp['checkins']['items']
 ncheckins = resp['checkins']['count']
+
+nearbyVenues = updateDB(checkins)
+
+"""
+nearbyVenues = []
+
 for check in checkins:
     venue = check['venue']
     beer = check['beer']
@@ -150,17 +216,37 @@ for check in checkins:
     if len(sqlVenue) == 0: #not there, add it
         addSQLVenue(venue)
 
-    #find beers
-    beerList = getSQLBeerList(venueid, beerid)
-    print beerList
-    # see if checkin in beerlist:
-    if len(beerList) == 0 or (check['checkin_id'] not in [b['checkin_id'] for b in beerList]):
-        addSQLBeerList(check)
+    #see if checkin is in the db
+    sqlCheckin = getSQLCheckin(check['checkin_id'])
+    if len(sqlCheckin) == 0: #not there, add it
+        addSQLCheckin(check)
 
-    
+    #keep track of nearby venues
+    nearbyVenues.append(venueid)
+"""
 
+#now create beerLists, make a maximum of 5 calls
+ncalls = 0
+beerList = []
+for venueid in nearbyVenues:
+    sqlBeerList = getSQLBeerList(venueid)
 
-    #if len(beerList) < 5: # can change this number
-    #    addSQLBeerList(check)
-    #    beerList = getSQLBeerList(venueid, beerid)
+    if (ncalls < 5) and (len(sqlBeerList) < 5):    
+        #find more beers
+        print "GETTING VENUE"
+        jsonoutput = getVenueFeed(venueid)
+        ncalls += 1
+        output = json.loads(jsonoutput)
+
+        resp = output['response']
+        checkins = resp['checkins']['items']
+        ncheckins = resp['checkins']['count']
+        updateDB(checkins)
+        
+        #query again
+        sqlBeerList = getSQLBeerList(venueid)
+
+    beerList.append({'venueid': venueid, 'beers': sqlBeerList})
+
+print beerList
 
