@@ -3,7 +3,7 @@ from app import app
 import pymysql as mdb
 
 from geo import geo
-from untappd import getPubFeed,getSQLBeerList,getSQLVenue
+from untappd import getPubFeed,getSQLBeerList,getSQLVenue,getLocalVenues
 
 import numpy as np
 import pandas as pd
@@ -12,12 +12,7 @@ db = mdb.connect(user="jeckel", passwd="data",
         host="localhost", db="beerdb", charset='utf8')
 
 similarity = np.load("similarity.npy")
-
-@app.route('/')
-@app.route('/index')
-def index():
-    return render_template("index.html",
-        title = 'Home', user = { 'nickname': 'Miguel' }, )
+df = pd.read_pickle("beerDataFrame.pkl")
 
 @app.route('/db')
 def cities_page():
@@ -43,6 +38,8 @@ def cities_page_fancy():
         cities.append(dict(name=result[0], country=result[1], population=result[2]))
     return render_template('cities.html', cities=cities)
 
+@app.route('/')
+@app.route('/index')
 @app.route('/input')
 def beersomme_input():
     results = None
@@ -69,23 +66,25 @@ def beersomme_output():
     #from some model with pickled thing
     #down below
 
-    #call untappd
-    checkins = getPubFeed(loc_gps)
-    venues = []
-    #beers = []
-    #breweries = []
+    #see whats nearby in my database
+    venues = getLocalVenues(loc_gps, 1) #radius is optional second input
 
-    for check in checkins:
-        venue = check['venue']
-        beer = check['beer']
-        brewery = check['brewery']
+    print venues
 
-        venueid = venue['venue_id']
-        beerid = beer['bid']
-
-        venues.append(venue)
-        #beers.append(beer)
-        #brewery
+    if len(venues) < 1:
+        #call untappd
+        checkins = getPubFeed(loc_gps)
+        venues = [] #might be able to remove this
+    
+        for check in checkins:
+            venue = check['venue']
+            beer = check['beer']
+            brewery = check['brewery']
+    
+            venueid = venue['venue_id']
+            beerid = beer['bid']
+    
+            venues.append(venue)
     
     beerList = [] #{venueid: vid, beerList: []}
 
@@ -97,12 +96,12 @@ def beersomme_output():
 
         #if nbeers too small get more
         # CODE HERE
-        beerList.append({'venueid': venueid, 'beerlist': beers})
+        if len(beers) > 0:
+            beerList.append({'venueid': venueid, 'beerlist': beers})
 
     #match untappd beers to ratebeer beers
     #pick out the columns with the nearby beers
    
-    df = pd.read_pickle("beerDataFrame.pkl")
     listofbeerids = []
     listofnames = []
     listofvenues = []
@@ -139,11 +138,16 @@ def beersomme_output():
                     listofbeerids.append(ind)
  
 
+    if len(listofbeerids) < 1:
+        # error page?
+        # 1 -> no beers found!
+        return render_template("input.html", error=1)
+
     #find best fit
     ind = df.index.get_loc(int(user_beer.encode('ASCII')))
     similar = similarity[ind, :] #old chub
-    for name, v in zip(listofnames, similar[listofbeerids]):
-        print name, v
+    #for name, v in zip(listofnames, similar[listofbeerids]):
+    #    print name, v
     
     similarsubset = similar[listofbeerids]
     rankingids = np.argsort(similarsubset)[::-1]

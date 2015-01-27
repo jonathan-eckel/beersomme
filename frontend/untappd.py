@@ -12,11 +12,11 @@ clientSecret = "3AB6E7FBD8687B46ABE270B691C058A4C6F8F70B"
 
 credentials = {'client_id':clientId, 'client_secret':clientSecret}
 
+con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb', charset='utf8') #host, user, password, #database
+
 def addSQLVenue(venue):
     data_venue = {'venue_id': int(venue['venue_id']), 'venue_name': venue['venue_name'], 'primary_category': venue['primary_category'], 'foursquare_url': venue['foursquare']['foursquare_url']}
     data_venue.update(venue['location'])
-
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
 
     with con:
         cur = con.cursor()
@@ -26,8 +26,6 @@ def addSQLVenue(venue):
     
 def addSQLBeer(beer,brewery):
     data_beer = {'bid': int(beer['bid']), 'beer_name': beer['beer_name'], 'brewery_name': brewery['brewery_name'], 'brewery_id': brewery['brewery_id'], 'brewery_slug': brewery['brewery_slug'], 'style': beer['beer_style'], 'abv': beer['beer_abv']}
-
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb', charset='utf8') #host, user, password, #database
 
     with con:
         cur = con.cursor()
@@ -41,8 +39,6 @@ def addSQLCheckin(checkin):
 
     data_checkin = [checkin['venue']['venue_id'], checkin['beer']['bid'], mydate.strftime("%Y-%m-%d %X"), checkin['checkin_id']]
 
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
-
     with con:
         cur = con.cursor()
         add_checkin = "INSERT INTO checkin(venueid,beerid, checkin_time, checkin_id) VALUES(%s, %s, %s, %s)"
@@ -51,7 +47,6 @@ def addSQLCheckin(checkin):
 
 
 def getSQLBeer(beerid):
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
 
     beer = {}
 
@@ -66,7 +61,6 @@ def getSQLBeer(beerid):
     return beer
 
 def getSQLVenue(venueid):
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
 
     venue = {}
 
@@ -81,7 +75,6 @@ def getSQLVenue(venueid):
     return venue
 
 def getSQLCheckin(checkin_id):
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
 
     checkin = {}
 
@@ -97,7 +90,6 @@ def getSQLCheckin(checkin_id):
 
 
 def getSQLBeerList(venueid):
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
 
     beerList = []
 
@@ -241,30 +233,23 @@ for check in checkins:
     nearbyVenues.append(venueid)
 """
 
-def getLocalVenues(loc_gps, **kwargs):
-    global ratelimit_CURRENT
+def getLocalVenues(loc_gps, radius=1):
     nearbyVenues = []
+    keys = ['venue_id','venue_name','primary_category', 'foursquare_url','venue_address', 'venue_state', 'venue_city', 'lat', 'lng', 'dist']
 
-    pubfeed = "/thepub/local"
-    payload = loc_gps
+    data_local = {"radius": radius}
+    data_local.update(loc_gps)
 
-    payload.update(kwargs)
-    payload.update(credentials)
-    
-    r = requests.get(apiurl+pubfeed, params=payload)
-    assert(r.status_code == requests.codes.ok)
-    
-    ratelimit_CURRENT = r.headers['x-ratelimit-remaining']
-    output = json.loads(r.content)
+    with con:
+        cur = con.cursor() 
+        find_local = "SELECT * , (3959 * acos( cos( radians( %(lat)s ) ) * cos( radians( lat ) ) * cos( radians( %(lng)s ) - radians(lng) ) + sin( radians( %(lat)s ) ) * sin( radians(lat) ) )) AS distanta FROM venue WHERE lat<>'' AND lng<>'' AND (category='Food' OR category='Nightlife Spot') HAVING distanta<%(radius)s  ORDER BY distanta ASC"
+        cur.execute(find_local, data_local)
+        rows = cur.fetchall()
+        for row in rows:
+            venue = dict(zip(keys, row))
+            nearbyVenues.append(venue)
 
-    resp = output['response']
-    checkins = resp['checkins']['items']
-    ncheckins = resp['checkins']['count']
-
-    for check in checkins:
-        nearbyVenues.append(check['venue'])
-
-    return nearbyVenues
+    return nearbyVenues #dist included as key
 
 
 
