@@ -104,6 +104,7 @@ def getSQLBeerList(venueid):
         
     return beerList
 
+
 def updateDB(checkins):
     nearbyVenues = []
 
@@ -112,32 +113,54 @@ def updateDB(checkins):
         beer = check['beer']
         brewery = check['brewery']
 
-        venueid = venue['venue_id']
         beerid = beer['bid']
+
+        #fix formatting
+        beer['beer_name'] = fixEncoding(beer['beer_name'])
+        brewery['brewery_name'] = fixEncoding(brewery['brewery_name'])
 
         #see if beer is in the db
         sqlBeer = getSQLBeer(beerid)
         if len(sqlBeer) == 0: #not there, add it
             addSQLBeer(beer, brewery)
 
-        #find venue
-        sqlVenue = getSQLVenue(venueid)
-        if len(sqlVenue) == 0: #not there, add it
-            addSQLVenue(venue)
 
-        #see if checkin is in the db
-        sqlCheckin = getSQLCheckin(check['checkin_id'])
-        if len(sqlCheckin) == 0: #not there, add it
-            addSQLCheckin(check)
+        if len(venue) > 0:
+            venueid = venue['venue_id']
+            venue['venue_name'] = fixEncoding(venue['venue_name'])
 
-        #keep track of nearby venues
-        nearbyVenues.append(venueid)
+            #find venue
+            sqlVenue = getSQLVenue(venueid)
+            if len(sqlVenue) == 0: #not there, add it
+                addSQLVenue(venue)
+
+            #see if checkin is in the db
+            sqlCheckin = getSQLCheckin(check['checkin_id'])
+            if len(sqlCheckin) == 0: #not there, add it
+                addSQLCheckin(check)
+
+            #keep track of nearby venues
+            nearbyVenues.append(venue)
 
     return nearbyVenues
     
+def getMoreBeers(venueid):
+    #global ncalls
+    checkins = getVenueFeed(venueid)
+    #ncalls += 1
+    updateDB(checkins)
+    return
 
     
 def getPubFeed(loc, **kwargs):
+    """
+    max_id (int, optional) - The checkin ID that you want the results to start with
+    min_id (int, optional) - Returns only checkins that are newer than this value
+    limit (int, optional) - The number of results to return, max of 25, default is 25
+    radius (int, optional) - The max radius you would like the check-ins to start within, max of 25, default is 25
+    dist_pref (string, optional) - If you want the results returned in miles or km. Available options: "m", or "km". Default is "m"
+    """
+
     global ratelimit_CURRENT
 
     pubfeed = "/thepub/local"
@@ -181,57 +204,14 @@ def getVenueFeed(venueid, **kwargs):
     return checkins
     #return r.content
 
-"""
-lat = '40.739627'
-lng = '-73.988400'
-#json_output = getPubFeed(lat, lng)
-#output =  json.loads(json_output)
+def fixEncoding(name):
+    utf_name = name.encode("UTF-8")
+    #print utf_name
+    ascii_name = unicode(utf_name, errors='ignore')
+    #print ascii_name
+    ascii_name = ascii_name.replace("()","")
+    return ascii_name.strip()
 
-#with open("sample_pub.json", "w") as f:
-#    json.dump(json_output,f)
-
-with open("sample_pub.json", "r") as f:
-    json_output = json.load(f)
-
-output =  json.loads(json_output)
-
-print ratelimit_CURRENT
-
-resp = output['response']
-checkins = resp['checkins']['items']
-ncheckins = resp['checkins']['count']
-
-nearbyVenues = updateDB(checkins)
-"""
-"""
-nearbyVenues = []
-
-for check in checkins:
-    venue = check['venue']
-    beer = check['beer']
-    brewery = check['brewery']
-
-    venueid = venue['venue_id']
-    beerid = beer['bid']
-
-    #see if beer is in the db
-    sqlBeer = getSQLBeer(beerid)
-    if len(sqlBeer) == 0: #not there, add it
-        addSQLBeer(beer, brewery)
-
-    #find venue
-    sqlVenue = getSQLVenue(venueid)
-    if len(sqlVenue) == 0: #not there, add it
-        addSQLVenue(venue)
-
-    #see if checkin is in the db
-    sqlCheckin = getSQLCheckin(check['checkin_id'])
-    if len(sqlCheckin) == 0: #not there, add it
-        addSQLCheckin(check)
-
-    #keep track of nearby venues
-    nearbyVenues.append(venueid)
-"""
 
 def getLocalVenues(loc_gps, radius=1):
     nearbyVenues = []
@@ -252,30 +232,3 @@ def getLocalVenues(loc_gps, radius=1):
     return nearbyVenues #dist included as key
 
 
-
-"""
-#now create beerLists, make a maximum of 5 calls
-ncalls = 0
-beerList = []
-for venueid in nearbyVenues:
-    sqlBeerList = getSQLBeerList(venueid)
-
-    if (ncalls < 5) and (len(sqlBeerList) < 5):    
-        #find more beers
-        print "GETTING VENUE"
-        jsonoutput = getVenueFeed(venueid)
-        ncalls += 1
-        output = json.loads(jsonoutput)
-
-        resp = output['response']
-        checkins = resp['checkins']['items']
-        ncheckins = resp['checkins']['count']
-        updateDB(checkins)
-        
-        #query again
-        sqlBeerList = getSQLBeerList(venueid)
-
-    beerList.append({'venueid': venueid, 'beers': sqlBeerList})
-
-print beerList
-"""

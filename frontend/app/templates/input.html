@@ -15,8 +15,13 @@
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="../static/css/starter-template.css" rel="stylesheet">
 
+    <link href="../static/css/mycss.css" rel="stylesheet">
+
+    <!--
+    <link rel="stylesheet" href="../static/css/slate.css" media="screen">
+    <link rel="stylesheet" href="../static/css/slate.min.css">
+    -->
     <!-- jQuery stuff -->
     <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
     <!--    
@@ -45,7 +50,7 @@
 
   <body>
 
-    <nav class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -54,7 +59,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">beersomme</a>
+          <a class="navbar-brand" href="/">beersomme</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -76,22 +81,30 @@
     </div>
 
     <div class = "container">
-
-      <form  action="/output" method="GET" id="inputform">
-        <div class="form-group">
-          <label for="userloc">Address:</label>
-          <input type="text" class="form-control input-lg" id="userloc" name='userloc' placeholder="35 E 21st St, New York, NY">
+    
+        <div class="row">
+            <div class="col-lg-10 col-md-10 col-sm-10">
+            <form  action="/output" method="GET" id="inputform">
+            <div class="form-group">
+                <label for="userloc">Address:</label>
+                <input type="text" class="form-control input" id="userloc" name='userloc' required=True placeholder="35 E 21st St, New York, NY">
+            </div>
+            </div>
+            <div class="col-lg-2 col-md-2 col-sm-2">
+            <div class="form-group">
+                <label for="radius">Radius (mi):</label>
+                <input type="number" class="form-control input" id="radius" name="radius" value="1" min="0" max="25" step="0.5">
+            </div>
+            </div>
         </div>
-
-        <div class="form-group">
-          <label for="userbeer">  Brewery Beer:</label>
-        <select id="userbeer" name="userbeer" class="input-lg select2 form-control">
-            {% for r in results %}
-                <option value="{{r[0]}}">{{r[1]}}</option>
-            {% endfor %}
-        </select>
-
-        </div>
+            <div class="form-group">
+                <label for="userbeer">  Beer:</label>
+                <select id="userbeer" name="userbeer" class="input-lg select2 form-control">
+                {% for r in results %}
+                    <option value="{{r[0]}}">{{r[1]}}</option>
+                {% endfor %}
+                </select>
+            </div>
 
         <div>
           <button type="submit" class="btn btn-default btn-lg">Find a bar!</button>
@@ -108,7 +121,17 @@
           No beers found!
         </div>
 -->        
-  </div> <!-- /.container-->
+  
+<br><br>
+
+<footer>
+<p>Powered by Untappd </p>
+<p> GIVE CREDIT FOR PHOTO </p>
+</footer>
+
+    </div> <!-- /.container-->
+
+  </body>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -126,9 +149,6 @@ var placeholder="Pick a beer";
     <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
     <script src="../static/js/bootstrap.min.js"></script>
 
-  </body>
-
-<footer>Powered by Untappd</footer>
 
 </html>
 

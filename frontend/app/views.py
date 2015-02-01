@@ -3,7 +3,7 @@ from app import app
 import pymysql as mdb
 
 from geo import geo
-from untappd import getPubFeed,getSQLBeerList,getSQLVenue,getLocalVenues
+from untappd import getPubFeed, getSQLBeerList, getSQLVenue, getLocalVenues, updateDB, getMoreBeers
 
 import numpy as np
 import pandas as pd
@@ -38,8 +38,17 @@ def cities_page_fancy():
         cities.append(dict(name=result[0], country=result[1], population=result[2]))
     return render_template('cities.html', cities=cities)
 
-@app.route('/')
 @app.route('/index')
+def greyscale():
+    results = None
+    return render_template("index.html", results=results)
+
+@app.route('/slate')
+def slate():
+    return render_template("slate.html")
+
+@app.route('/')
+#@app.route('/index')
 @app.route('/input')
 def beersomme_input():
     results = None
@@ -48,7 +57,7 @@ def beersomme_input():
         sql = "SELECT id,name FROM ratebeer ORDER BY name"
         cur.execute(sql)
         results = cur.fetchall()
-        print results
+        #print results
         return render_template("input.html", results=results)
     
 
@@ -62,20 +71,26 @@ def beersomme_output():
     #pull 'ID' from selector and store it
     user_beer = request.args.get('userbeer')
 
+    radius = request.args.get('radius')
+
     #get row of similarity matrix
     #from some model with pickled thing
     #down below
 
     #see whats nearby in my database
-    venues = getLocalVenues(loc_gps, 1) #radius is optional second input
+    venues = getLocalVenues(loc_gps, radius) #radius is optional second input
 
     print venues
 
-    if len(venues) < 1:
+    if len(venues) < 50:
         #call untappd
-        checkins = getPubFeed(loc_gps)
-        venues = [] #might be able to remove this
-    
+        checkins = getPubFeed(loc_gps, radius=radius)
+        #venues = [] #might be able to remove this
+        
+        nearbyVenues = updateDB(checkins)
+        venues += nearbyVenues
+
+        """        
         for check in checkins:
             venue = check['venue']
             beer = check['beer']
@@ -85,8 +100,10 @@ def beersomme_output():
             beerid = beer['bid']
     
             venues.append(venue)
-    
+        """
+
     beerList = [] #{venueid: vid, beerList: []}
+    print venues
 
     for bar in venues:
         venueid = bar['venue_id']
@@ -95,7 +112,12 @@ def beersomme_output():
         #add to db
 
         #if nbeers too small get more
-        # CODE HERE
+        ncalls = 0        
+        if ncalls < 5 and len(beers) < 5:
+            getMoreBeers(venueid)
+            ncalls += 1
+            beers = getSQLBeerList(venueid)
+
         if len(beers) > 0:
             beerList.append({'venueid': venueid, 'beerlist': beers})
 
@@ -141,6 +163,7 @@ def beersomme_output():
     if len(listofbeerids) < 1:
         # error page?
         # 1 -> no beers found!
+        #beersomme_input(error=1)
         return render_template("input.html", error=1)
 
     #find best fit
@@ -151,6 +174,22 @@ def beersomme_output():
     
     similarsubset = similar[listofbeerids]
     rankingids = np.argsort(similarsubset)[::-1]
+
+    # lets keep track of the top n (10)
+    nBest = 10
+    top_ids = rankingids[:10]
+    arrayofnames = np.array(listofnames)
+    arrayofvenues = np.array(listofvenues)
+    top_names = arrayofnames[top_ids]
+    top_scores = similarsubset[top_ids]
+    top_venues = nBest*[0]    
+
+    for i,vid in enumerate(arrayofvenues[top_ids]):
+        top_venues[i] = getSQLVenue(int(vid))
+
+    top_dict = [{"name": n,"score": s, "venue": v} for n,s,v in zip(top_names, top_scores, top_venues)]
+
+
     bestid = rankingids[0]
 
     best_match = listofnames[bestid]
@@ -168,5 +207,5 @@ def beersomme_output():
     #pop_input = cities[0]['population']
     best_match = listofnames[bestid] #beerList
     #the_result = ModelIt(city, pop_input)
-    return render_template("output.html", best_match = best_match, best_score = best_score, best_venue = best_venue)
+    return render_template("output.html", beerList = top_dict, best_match = best_match, best_score = best_score, best_venue = best_venue)
 

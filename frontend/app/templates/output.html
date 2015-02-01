@@ -7,15 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
+    <!--
     <link rel="icon" href="../../favicon.ico">
-
-    <title>Starter Template for Bootstrap</title>
+    -->
+    <title>beersomme</title>
 
     <!-- Bootstrap core CSS -->
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="starter-template.css" rel="stylesheet">
+    <link href="../static/css/mycss.css" rel="stylesheet">
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -30,7 +31,7 @@
 
   <body>
 
-    <nav class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -39,7 +40,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Project name</a>
+          <a class="navbar-brand" href="/">beersomme</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -70,26 +71,53 @@
      </div> -->  <!-- /.container -->
 
     <div class="container">
-      <div class="starter-template">
-        <h3>Another Result:</h3>
-        <p class="lead">You should go to the {{best_venue['primary_category']}}: {{best_venue['venue_name'].encode('ascii', errors='replace')}}<br>The result is {{best_match}} with a score of {{best_score}} </p>
-      </div>
+
+        <div class="jumbotron">
+          <h1>Recommendation</h1>
+            <p class="lead">You should go to the {{best_venue['primary_category']}}: {{best_venue['venue_name'].encode('ascii', errors='replace')}}<br>The result is {{best_match}} with a score of {{best_score}} </p>
+            <p><a class="btn btn-primary btn-lg">Learn more</a></p>
+        </div>
+
+        <table class="table table-striped table-hover">
+        <thead>
+        <tr><th>Venue</th><th>Beer</th><th>Score</th></tr>
+        </thead>
+        <tbody>
+        {% for beer in beerList %}
+        <tr><td>{{ beer['venue']['venue_name'] }}</td>
+            <td>{{ beer['name'] }}</td>
+            <td> {{ beer['score']}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+        </table>
 
 
-      <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-      <script src="static/js/bootstrap.min.js"></script>
 
 
-     </div><!-- /.container -->
+
+
+<br><br>
+
+<footer>
+<p>Powered by Untappd </p>
+<p> GIVE CREDIT FOR PHOTO </p>
+</footer>
+
+    </div> <!-- /.container-->
+
+</body>
 
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
+      <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+      <script src="static/js/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="../../dist/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
-  </body>
+
 </html>
 
