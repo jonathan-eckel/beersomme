@@ -12,11 +12,11 @@ clientSecret = "3AB6E7FBD8687B46ABE270B691C058A4C6F8F70B"
 
 credentials = {'client_id':clientId, 'client_secret':clientSecret}
 
+con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb', charset='utf8') #host, user, password, #database
+
 def addSQLVenue(venue):
     data_venue = {'venue_id': int(venue['venue_id']), 'venue_name': venue['venue_name'], 'primary_category': venue['primary_category'], 'foursquare_url': venue['foursquare']['foursquare_url']}
     data_venue.update(venue['location'])
-
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
 
     with con:
         cur = con.cursor()
@@ -26,8 +26,6 @@ def addSQLVenue(venue):
     
 def addSQLBeer(beer,brewery):
     data_beer = {'bid': int(beer['bid']), 'beer_name': beer['beer_name'], 'brewery_name': brewery['brewery_name'], 'brewery_id': brewery['brewery_id'], 'brewery_slug': brewery['brewery_slug'], 'style': beer['beer_style'], 'abv': beer['beer_abv']}
-
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb', charset='utf8') #host, user, password, #database
 
     with con:
         cur = con.cursor()
@@ -41,8 +39,6 @@ def addSQLCheckin(checkin):
 
     data_checkin = [checkin['venue']['venue_id'], checkin['beer']['bid'], mydate.strftime("%Y-%m-%d %X"), checkin['checkin_id']]
 
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
-
     with con:
         cur = con.cursor()
         add_checkin = "INSERT INTO checkin(venueid,beerid, checkin_time, checkin_id) VALUES(%s, %s, %s, %s)"
@@ -51,8 +47,6 @@ def addSQLCheckin(checkin):
 
 
 def getSQLBeer(beerid):
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
-
     beer = {}
 
     with con: 
@@ -66,8 +60,6 @@ def getSQLBeer(beerid):
     return beer
 
 def getSQLVenue(venueid):
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
-
     venue = {}
 
     with con: 
@@ -81,8 +73,6 @@ def getSQLVenue(venueid):
     return venue
 
 def getSQLCheckin(checkin_id):
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
-
     checkin = {}
 
     with con: 
@@ -97,8 +87,6 @@ def getSQLCheckin(checkin_id):
 
 
 def getSQLBeerList(venueid):
-    con = mdb.connect('localhost', 'jeckel', 'data', 'beerdb') #host, user, password, #database
-
     beerList = []
 
     with con: 
@@ -117,26 +105,34 @@ def updateDB(checkins):
         beer = check['beer']
         brewery = check['brewery']
 
-        venueid = venue['venue_id']
         beerid = beer['bid']
+
+        #fix formatting
+        beer['beer_name'] = fixEncoding(beer['beer_name'])
+        brewery['brewery_name'] = fixEncoding(brewery['brewery_name'])
 
         #see if beer is in the db
         sqlBeer = getSQLBeer(beerid)
         if len(sqlBeer) == 0: #not there, add it
             addSQLBeer(beer, brewery)
 
-        #find venue
-        sqlVenue = getSQLVenue(venueid)
-        if len(sqlVenue) == 0: #not there, add it
-            addSQLVenue(venue)
 
-        #see if checkin is in the db
-        sqlCheckin = getSQLCheckin(check['checkin_id'])
-        if len(sqlCheckin) == 0: #not there, add it
-            addSQLCheckin(check)
+        if len(venue) > 0:
+            venueid = venue['venue_id']
+            venue['venue_name'] = fixEncoding(venue['venue_name'])
 
-        #keep track of nearby venues
-        nearbyVenues.append(venueid)
+            #find venue
+            sqlVenue = getSQLVenue(venueid)
+            if len(sqlVenue) == 0: #not there, add it
+                addSQLVenue(venue)
+
+            #see if checkin is in the db
+            sqlCheckin = getSQLCheckin(check['checkin_id'])
+            if len(sqlCheckin) == 0: #not there, add it
+                addSQLCheckin(check)
+
+            #keep track of nearby venues
+            nearbyVenues.append(venueid)
 
     return nearbyVenues
     
@@ -174,18 +170,26 @@ def getVenueFeed(venueid, **kwargs):
 
     return r.content
 
+def fixEncoding(name):
+    utf_name = name.encode("UTF-8")
+    #print utf_name
+    ascii_name = unicode(utf_name, errors='ignore')
+    #print ascii_name
+    ascii_name = ascii_name.replace("()","")
+    return ascii_name.strip()
+
 lat = '40.739627'
 lng = '-73.988400'
-#json_output = getPubFeed(lat, lng)
-#output =  json.loads(json_output)
+json_output = getPubFeed(lat, lng, radius=1)
+output =  json.loads(json_output)
 
 #with open("sample_pub.json", "w") as f:
 #    json.dump(json_output,f)
 
-with open("sample_pub.json", "r") as f:
-    json_output = json.load(f)
+#with open("sample_pub.json", "r") as f:
+#    json_output = json.load(f)
 
-output =  json.loads(json_output)
+#output =  json.loads(json_output)
 
 print ratelimit_CURRENT
 
@@ -231,7 +235,7 @@ beerList = []
 for venueid in nearbyVenues:
     sqlBeerList = getSQLBeerList(venueid)
 
-    if (ncalls < 5) and (len(sqlBeerList) < 5):    
+    if (ncalls < 50) and (len(sqlBeerList) < 50):    
         #find more beers
         print "GETTING VENUE"
         jsonoutput = getVenueFeed(venueid)
@@ -247,6 +251,7 @@ for venueid in nearbyVenues:
         sqlBeerList = getSQLBeerList(venueid)
 
     beerList.append({'venueid': venueid, 'beers': sqlBeerList})
+ 
 
-print beerList
+#print beerList
 

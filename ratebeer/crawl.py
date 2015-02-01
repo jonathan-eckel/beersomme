@@ -56,10 +56,10 @@ def extractDesc(link):
 
     return {'beer': name, 'description': desc}
 
-name: desc}
+#name: desc}
 
 #link = getLinks()[0][0]
-linkDict = getLinks('a*.html') #
+linkDict = getLinks('*.html') #
 
 #print linkDict['IPA']
 
@@ -71,11 +71,11 @@ for style, ell in linkDict.iteritems():
     output = [0]*n
 
     for i,myLink in enumerate(ell):
-        print myLink    
+        print "http://www.ratebeer.com" + myLink    
         #extractDesc(myLink)
-        output[i] = extractDesc(myLink)
+        #output[i] = extractDesc(myLink)
 
-    with open(style + '.json', 'w') as f:
-        json.dump(output, f)
+    #with open(style + '.json', 'w') as f:
+        #json.dump(output, f)
 
 
