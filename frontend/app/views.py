@@ -11,7 +11,7 @@ import pandas as pd
 db = mdb.connect(user="jeckel", passwd="data", 
         host="localhost", db="beerdb", charset='utf8')
 
-similarity = np.load("similarity.npy")
+similarity = np.load("similarity.npy", mmap_mode="r")
 df = pd.read_pickle("beerDataFrame.pkl")
 
 @app.route('/db')
