@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="../../favicon.ico">
 
     <title>beersomme</title>
 
@@ -17,6 +16,8 @@
     <!-- Custom styles for this template -->
 
     <link href="../static/css/mycss.css" rel="stylesheet">
+    <link href="../static/css/sticky_footer.css" rel="stylesheet">
+    
 
     <!--
     <link rel="stylesheet" href="../static/css/slate.css" media="screen">
@@ -36,10 +37,6 @@
     <script src="../static/js/select2.js"></script>
     -->
     
-    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
-    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
-    <script src="../../assets/js/ie-emulation-modes-warning.js"></script>
-
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -49,6 +46,8 @@
   </head>
 
   <body>
+    
+    <div id="wrap">
 
     <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
@@ -121,17 +120,27 @@
           No beers found!
         </div>
 -->        
-  
-<br><br>
 
-<footer>
-<p>Powered by Untappd </p>
-<p> GIVE CREDIT FOR PHOTO </p>
-</footer>
+  
 
     </div> <!-- /.container-->
 
+    <div class="container">
+    <p class="text-right">Powered by <a href="https://untappd.com/">Untappd</a> </p>
+    </div>
+
+    <div id="push"></div>
+
+    </div>
+
+<div id="footer">
+<div class="container">
+<p><a href="https://www.flickr.com/photos/katarzynab/3360111942">Background photo</a> taken by <a href="https://www.flickr.com/photos/katarzynab/">katarzynab</a> and made available under an <a href="https://creativecommons.org/licenses/by-nd/2.0/">Attribution-NoDerivs 2.0 Generic License</a></p>
+</div>
+</div>
   </body>
+
+
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -145,8 +154,6 @@ var placeholder="Pick a beer";
 </script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
     <script src="../static/js/bootstrap.min.js"></script>
 
 

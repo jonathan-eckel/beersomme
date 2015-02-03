@@ -180,6 +180,11 @@ def getPubFeed(loc, **kwargs):
     checkins = resp['checkins']['items']
     ncheckins = resp['checkins']['count']
 
+    #add distance
+    for check in checkins:
+        venue = check['venue']
+        venue['dist'] = gpsDistance(loc, {'lat': venue['location']['lat'], 'lng': venue['location']['lng']})
+
     return checkins
 
 def getVenueFeed(venueid, **kwargs):
@@ -204,6 +209,20 @@ def getVenueFeed(venueid, **kwargs):
     return checkins
     #return r.content
 
+def gpsDistance(loc1, loc2):
+    from math import acos, sin, cos, radians
+
+    lat1 = loc1['lat']
+    lng1 = loc1['lng']
+    lat2 = loc2['lat']
+    lng2 = loc2['lng']
+    
+    # distance in miles
+    dist = 3959.0 * acos( cos( radians(lat2) ) * cos( radians(lat1) ) * cos( radians(lng2) - radians(lng1) ) + sin( radians(lat2) ) * sin( radians(lat1) ) )
+
+    return dist
+
+
 def fixEncoding(name):
     utf_name = name.encode("UTF-8")
     #print utf_name
@@ -211,7 +230,6 @@ def fixEncoding(name):
     #print ascii_name
     ascii_name = ascii_name.replace("()","")
     return ascii_name.strip()
-
 
 def getLocalVenues(loc_gps, radius=1):
     nearbyVenues = []

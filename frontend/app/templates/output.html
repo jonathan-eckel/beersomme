@@ -17,10 +17,10 @@
 
     <!-- Custom styles for this template -->
     <link href="../static/css/mycss.css" rel="stylesheet">
+    <link href="../static/css/sticky_footer.css" rel="stylesheet">
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
-    <script src="../../assets/js/ie-emulation-modes-warning.js"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -30,6 +30,8 @@
   </head>
 
   <body>
+
+    <div id="wrap">
 
     <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
@@ -72,9 +74,10 @@
 
     <div class="container">
 
+    <!--
         <div class="jumbotron">
           <h1>Recommendation</h1>
-            <p class="lead">You should go to the {{best_venue['primary_category']}}: {{best_venue['venue_name'].encode('ascii', errors='replace')}}<br>The result is {{best_match}} with a score of {{best_score}} </p>
+            <p class="lead">You should go to the best_venue['primary_category']: best_venue['venue_name'].encode('ascii', errors='replace')<br>The result is best_match with a score of best_score </p>
             <p><a class="btn btn-primary btn-lg">Learn more</a></p>
         </div>
 
@@ -91,20 +94,84 @@
         {% endfor %}
         </tbody>
         </table>
+    -->
+    <!--
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr><th>Venue</th><th>Beer</th><th>Score</th></tr>
+        </thead>
+        <tbody>
+        {% for myVenue in topVenues %}
+            <tr><td>{{ myVenue['venue_name'] }}</td></tr>
+            {% set venueloop = loop %}
+            {% for b in topBeers[venueloop.index0] %}
+                <tr>
+                <td></td>
+                <td>{{ b['beer_name'] }}</td>
+                <td>{{ venueloop.index0 }} {{ loop.index0 }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+    -->
+
+<br>
+
+{% for myVenue in topVenues %}
+    <div class="container">
+
+        <div class="media">
+          <div class="media-body">
+            <h2 class="media-heading"> {{ myVenue['venue_name'] }} <small style="color:#FFFFFF">( {{ "%12.2f" % myVenue['dist'] }} mi )</small></h2>
+            {{myVenue['venue_address']}}, {{myVenue['venue_city']}}, {{myVenue['venue_state']}}
+          </div>
+          <div class="media-right">
+            <a href="{{ myVenue['foursquare_url'] }}" target="_blank">
+              <img class="media-object" src="static/img/foursquare-icon-36x36.png">
+            </a>
+          </div>
+        </div>
+
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th width="20%">Beer</th>
+                <th width="20%">Style</th>
+                <th width="20%">Brewery</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% set venueloop = loop %}
+                {% for b in topBeers[venueloop.index0] %}
+                    <tr>
+                    <td>{{ b['beer_name'] }}</td>
+                    <td>{{ b['style'] }}</td>
+                    <td>{{ b['brewery_name'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endfor %}
 
 
-
-
-
-
-<br><br>
-
-<footer>
-<p>Powered by Untappd </p>
-<p> GIVE CREDIT FOR PHOTO </p>
-</footer>
 
     </div> <!-- /.container-->
+
+    <div class="container">
+    <p class="text-right">Powered by <a href="https://untappd.com/">Untappd</a> </p>
+    </div>
+
+    <div id="push"></div>
+
+    </div>
+
+<div id="footer">
+<div class="container">
+<p><a href="https://www.flickr.com/photos/katarzynab/3360111942">Background photo</a> taken by <a href="https://www.flickr.com/photos/katarzynab/">katarzynab</a> and made available under an <a href="https://creativecommons.org/licenses/by-nd/2.0/">Attribution-NoDerivs 2.0 Generic License</a></p>
+</div>
+</div>
 
 </body>
 
@@ -112,12 +179,12 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
+    <!--
       <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    -->
+      <script src="static/js/jquery.js"></script>
       <script src="static/js/bootstrap.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="../../dist/js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+
 
 </html>
 

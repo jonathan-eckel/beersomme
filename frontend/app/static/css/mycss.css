@@ -1,4 +1,6 @@
+/*
 @import url("//fonts.googleapis.com/css?family=Lato:400,700,400italic");
+*/
 /*!
  * bootswatch v3.3.2
  * Homepage: http://bootswatch.com
@@ -13,7 +15,7 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 body {
-  padding-top: 25px;
+  padding-top: 25px; 
   /* margin: 0; */
   background: url('../img/beer_background.jpg') no-repeat center center fixed;
   -webkit-background-size: cover;
@@ -22,6 +24,11 @@ body {
   background-size: cover;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
+}
+.row.vcenter {
+    display: inline-block;
+    vertical-align: bottom;
+    float: none;
 }
 article,
 aside,

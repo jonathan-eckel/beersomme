@@ -68,10 +68,11 @@ def beersomme_output():
     #get GPS
     loc_gps = geo(loc_address)
 
+    radius = request.args.get('radius')
+
+
     #pull 'ID' from selector and store it
     user_beer = request.args.get('userbeer')
-
-    radius = request.args.get('radius')
 
     #get row of similarity matrix
     #from some model with pickled thing
@@ -80,15 +81,27 @@ def beersomme_output():
     #see whats nearby in my database
     venues = getLocalVenues(loc_gps, radius) #radius is optional second input
 
-    print venues
+    #print venues
 
-    if len(venues) < 50:
+    venueids = [v['venue_id'] for v in venues]
+
+    if len(venues) < 25:
         #call untappd
         checkins = getPubFeed(loc_gps, radius=radius)
         #venues = [] #might be able to remove this
         
         nearbyVenues = updateDB(checkins)
-        venues += nearbyVenues
+    
+        # TO FIX DUPLICATES and Add Proper location info
+        for v in nearbyVenues:
+            # Add Proper location info
+            v.update(v['location'])
+            if v['venue_id'] not in venueids:
+                venues.append(v)
+                venueids.append(v['venue_id'])
+
+        #venues += [v if v['venue_id'] not in venueids for v in nearbyVenues]
+        #venues += nearbyVenues
 
         """        
         for check in checkins:
@@ -102,10 +115,12 @@ def beersomme_output():
             venues.append(venue)
         """
 
-    beerList = [] #{venueid: vid, beerList: []}
-    print venues
+    beerList = [] #{venue: venue, beerList: []}
+    #print venues
+
 
     for bar in venues:
+        #print bar
         venueid = bar['venue_id']
         beers = getSQLBeerList(venueid)
 
@@ -113,13 +128,13 @@ def beersomme_output():
 
         #if nbeers too small get more
         ncalls = 0        
-        if ncalls < 5 and len(beers) < 5:
+        if ncalls < 5 and len(beers) < 1:
             getMoreBeers(venueid)
             ncalls += 1
             beers = getSQLBeerList(venueid)
 
         if len(beers) > 0:
-            beerList.append({'venueid': venueid, 'beerlist': beers})
+            beerList.append({'venue': bar, 'beerlist': beers})
 
     #match untappd beers to ratebeer beers
     #pick out the columns with the nearby beers
@@ -128,8 +143,13 @@ def beersomme_output():
     listofnames = []
     listofvenues = []
 
+    matchedBeerList = [] #{venue: venue, beerList: []}
+
     for ell in beerList:
-        venueid = ell['venueid']
+        venue = ell['venue']
+        venueid = venue['venue_id']
+        matchedBeers = []
+        matchedids = []
         for beer in ell['beerlist']:
                 beerName = beer['beer_name'].strip()
                 if "Brewery" in beer['brewery_name']:
@@ -158,6 +178,11 @@ def beersomme_output():
                     listofvenues.append(venueid)
                     listofnames.append(myName)
                     listofbeerids.append(ind)
+                    matchedBeers.append(beer)
+                    matchedids.append(ind)
+        
+        #print matchedBeers
+        matchedBeerList.append({'venue': venue, 'beerList': matchedBeers, 'ids': matchedids})
  
 
     if len(listofbeerids) < 1:
@@ -166,6 +191,41 @@ def beersomme_output():
         #beersomme_input(error=1)
         return render_template("input.html", error=1)
 
+    ind = df.index.get_loc(int(user_beer.encode('ASCII')))
+    #get the Top n beers
+    topBeerids = getTopBeers(listofbeerids, ind)
+    print topBeerids
+
+    # get a score for each venue 
+    topVenues = []
+    keys = ['venue', 'score', 'beers']
+
+    for d in matchedBeerList:
+        venue = d['venue']
+        myBeerList = d['beerList']
+        myids = d['ids']
+        #print venue, myBeerList, myids
+        score, beers = getScore(myBeerList, myids, topBeerids, ind)
+        print score, venue['venue_name']
+        if score > 0:
+            topVenues.append(dict(zip(keys, [venue, score, beers])))
+
+    #print topVenues
+    # get info for the top 5 venues
+
+    nVenues = 5
+
+    outputVenues = [v['venue'] for v in sorted(topVenues, key=lambda x: x['score'], reverse=True)[:nVenues]]
+
+    outputBeers = [b['beers'] for b in sorted(topVenues, key=lambda x: x['score'], reverse=True)[:nVenues]]
+
+    outputScores = [v['score'] for v in sorted(topVenues, key=lambda x: x['score'], reverse=True)[:nVenues]]
+
+    print topVenues
+
+    return render_template("output.html", topVenues = outputVenues, topBeers = outputBeers, topScores = outputScores)
+    
+    """
     #find best fit
     ind = df.index.get_loc(int(user_beer.encode('ASCII')))
     similar = similarity[ind, :] #old chub
@@ -208,4 +268,59 @@ def beersomme_output():
     best_match = listofnames[bestid] #beerList
     #the_result = ModelIt(city, pop_input)
     return render_template("output.html", beerList = top_dict, best_match = best_match, best_score = best_score, best_venue = best_venue)
+    """
+
+def getScore(beerList, myids, topBeerids, beerInd):
+    global similarity
+
+    similar = similarity[beerInd, :]
+    listofbeers = []
+    listofbeerids = []
+
+    #print topBeerids
+    #print "len of beerlist", len(beerList)
+    #print "len of myids", len(myids)
+    #print myids
+
+    # only take beers that are the 10 closest to mybeer
+    for b,i in zip(beerList, myids):
+        #print b, i
+        if i in topBeerids:
+            #print b, i
+            listofbeers.append(b)
+            listofbeerids.append(i)
+
+    if len(listofbeers) < 1:
+        return 0, []
+
+    #print listofbeerids
+    similarsubset = similar[listofbeerids]
+    rankingids = np.argsort(similarsubset)[::-1]
+
+    score = 0
+    outputList = []
+    for i in rankingids:
+        #print "UM:", similarsubset[i]
+        score += similarsubset[i]
+        outputList.append(listofbeers[i])
+
+    #print "SCORE:", score
+    #print outputList
+    return (score, outputList)
+
+def getTopBeers(listofbeerids, beerInd):
+    global similarity
+
+    uniArray = np.unique(listofbeerids)
+
+    similar = similarity[beerInd, :]
+    similarsubset = similar[uniArray]
+    rankingids = np.argsort(similarsubset)[::-1]
+
+    # lets keep track of the top n (10)
+    nBest = 10
+
+    top_ids = uniArray[rankingids[:nBest]]
+
+    return top_ids 
 
