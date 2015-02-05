@@ -38,10 +38,10 @@ def cities_page_fancy():
         cities.append(dict(name=result[0], country=result[1], population=result[2]))
     return render_template('cities.html', cities=cities)
 
-@app.route('/index')
-def greyscale():
+@app.route('/slides')
+def slides():
     results = None
-    return render_template("index.html", results=results)
+    return render_template("slides.html", results=results)
 
 @app.route('/slate')
 def slate():
@@ -194,7 +194,7 @@ def beersomme_output():
     ind = df.index.get_loc(int(user_beer.encode('ASCII')))
     #get the Top n beers
     topBeerids = getTopBeers(listofbeerids, ind)
-    print topBeerids
+    #print topBeerids
 
     # get a score for each venue 
     topVenues = []
@@ -206,7 +206,7 @@ def beersomme_output():
         myids = d['ids']
         #print venue, myBeerList, myids
         score, beers = getScore(myBeerList, myids, topBeerids, ind)
-        print score, venue['venue_name']
+        #print score, venue['venue_name']
         if score > 0:
             topVenues.append(dict(zip(keys, [venue, score, beers])))
 
@@ -221,7 +221,7 @@ def beersomme_output():
 
     outputScores = [v['score'] for v in sorted(topVenues, key=lambda x: x['score'], reverse=True)[:nVenues]]
 
-    print topVenues
+    #print topVenues
 
     return render_template("output.html", topVenues = outputVenues, topBeers = outputBeers, topScores = outputScores)
     
