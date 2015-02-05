@@ -184,6 +184,7 @@ def getPubFeed(loc, **kwargs):
     for check in checkins:
         venue = check['venue']
         venue['dist'] = gpsDistance(loc, {'lat': venue['location']['lat'], 'lng': venue['location']['lng']})
+        venue['foursquare_url'] = venue['foursquare']['foursquare_url']
 
     return checkins
 
