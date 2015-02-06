@@ -86,7 +86,7 @@
             <form  action="/output" method="GET" id="inputform">
             <div class="form-group">
                 <label for="userloc">Address:</label>
-                <input type="text" class="form-control input" id="userloc" name='userloc' required=True placeholder="35 E 21st St, New York, NY">
+                <input id="address" type="text" class="form-control input" id="userloc" name='userloc' required=True placeholder="35 E 21st St, New York, NY">
             </div>
             </div>
             <div class="col-lg-2 col-md-2 col-sm-2">
@@ -95,6 +95,11 @@
                 <input type="number" class="form-control input" id="radius" name="radius" value="1" min="0" max="25" step="0.5">
             </div>
             </div>
+
+    <button type="button" class="btn btn-default" onclick="getLocation()">Get Location</button>
+
+        <p id="mylocation"></p>
+
         </div>
             <div class="form-group">
                 <label for="userbeer">  Beer:</label>
@@ -110,6 +115,8 @@
         </div>
 
       </form>
+
+
 
     </div>
 
@@ -145,6 +152,56 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
+
+<script>
+var x = document.getElementById("mylocation");
+
+function getLocation() {
+    if (navigator.geolocation) {
+        position = navigator.geolocation.getCurrentPosition(disableAddress);
+
+    } else { 
+        x.innerHTML = "Geolocation is not supported by this browser.";
+    }
+}
+
+function disableAddress(position) {
+    lat = position.coords.latitude
+    lng = position.coords.longitude
+
+//    $("#address")[0].disabled = true;
+    var str1 = "LAT: ".concat(lat);
+    var s = ", "
+    var str2 = "LNG: ".concat(lng);
+    $("#address")[0].value = str1.concat(s).concat(str2)
+}
+
+//function showPosition(position) {
+//    x.innerHTML = "Latitude: " + position.coords.latitude + 
+//    "<br>Longitude: " + position.coords.longitude;	
+//}
+
+function addFields(){
+            // Container <div> where dynamic content will be placed
+            var container = document.getElementById("container");
+            // Clear previous contents of the container
+            while (container.hasChildNodes()) {
+                container.removeChild(container.lastChild);
+            }
+            for (i=0;i<number;i++){
+                // Append a node with a random text
+                container.appendChild(document.createTextNode("Member " + (i+1)));
+                // Create an <input> element, set its type and name attributes
+                var input = document.createElement("input");
+                input.type = "text";
+                input.name = "member" + i;
+                container.appendChild(input);
+                // Append a line break 
+                container.appendChild(document.createElement("br"));
+            }
+        }
+</script>
+
 
 <script src="//select2.github.io/select2/select2-3.5.2/select2.js"></script>
 <!-- Placeholder isn't working...oh well -->

@@ -64,9 +64,17 @@ def beersomme_input():
 @app.route('/output')
 def beersomme_output():
     #pull 'ID' from input field and store it
-    loc_address = request.args.get('userloc')
-    #get GPS
-    loc_gps = geo(loc_address)
+    loc_address = request.args.get('userloc')    
+
+    #see if its a LAT LNG
+    if loc_address.startswith("LAT:"):
+        x = loc_address.split(",")
+        lat = float(x[0].split(":")[1])
+        lng = float(x[1].split(":")[1])
+        loc_gps = {'lat': lat,'lng': lng}
+    else:
+        #get GPS
+        loc_gps = geo(loc_address)
 
     radius = request.args.get('radius')
 
