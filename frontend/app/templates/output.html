@@ -121,7 +121,7 @@
 {% for myVenue in topVenues %}
     <div class="container">
 
-        <div class="media">
+        <div class="media" style="background-color: rgba(0,0,0,0.3);">
           <div class="media-body">
             <h2 class="media-heading"> {{ myVenue['venue_name'] }} <small style="color:#FFFFFF">( {{ "%12.2f" % myVenue['dist'] }} mi )</small></h2>
             {{myVenue['venue_address']}}, {{myVenue['venue_city']}}, {{myVenue['venue_state']}}
@@ -182,7 +182,7 @@
     <!--
       <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     -->
-      <script src="static/js/jquery.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
       <script src="static/js/bootstrap.min.js"></script>
 
 

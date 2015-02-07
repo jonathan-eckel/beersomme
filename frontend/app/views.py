@@ -93,7 +93,7 @@ def beersomme_output():
 
     venueids = [v['venue_id'] for v in venues]
 
-    if len(venues) < 25:
+    if len(venues) < 10:
         #call untappd
         checkins = getPubFeed(loc_gps, radius=radius)
         #venues = [] #might be able to remove this
@@ -135,8 +135,9 @@ def beersomme_output():
         #add to db
 
         #if nbeers too small get more
+        #number is relatively small to avoid excessive calls
         ncalls = 0        
-        if ncalls < 5 and len(beers) < 1:
+        if ncalls < 5 and len(beers) < 3:
             getMoreBeers(venueid)
             ncalls += 1
             beers = getSQLBeerList(venueid)

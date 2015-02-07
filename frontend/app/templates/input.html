@@ -24,7 +24,9 @@
     <link rel="stylesheet" href="../static/css/slate.min.css">
     -->
     <!-- jQuery stuff -->
+    <!--
     <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+    -->
     <!--    
 <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
     -->
@@ -74,29 +76,35 @@
 
  <div class="container">
 
-    <div class="starter-template">
+    <div>
         <h1>beersomme</h1>
         <p class="lead">Find a bar, drink awesome beer!</p>
     </div>
 
     <div class = "container">
-    
+
         <div class="row">
-            <div class="col-lg-10 col-md-10 col-sm-10">
             <form  action="/output" method="GET" id="inputform">
+            <div class="col-lg-10 col-md-10 col-sm-10">
             <div class="form-group">
-                <label for="userloc">Address:</label>
+            <label for="userloc">Address:</label>
+            <div class="input-group">
                 <input id="address" type="text" class="form-control input" id="userloc" name='userloc' required=True placeholder="35 E 21st St, New York, NY">
+                  <span class="input-group-btn">
+                    <label for="mybutton">a</label>
+                    <button type="button" class="btn btn-default" onclick="getLocation()">
+                    <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
+                    </button>
+                  </span>
+            </div>
             </div>
             </div>
             <div class="col-lg-2 col-md-2 col-sm-2">
             <div class="form-group">
                 <label for="radius">Radius (mi):</label>
-                <input type="number" class="form-control input" id="radius" name="radius" value="1" min="0" max="25" step="0.5">
+                <input type="number" class="form-control input" id="radius" name="radius" value="1" min="0.25" max="25" step="0.25">
             </div>
             </div>
-
-    <button type="button" class="btn btn-default" onclick="getLocation()">Get Location</button>
 
         <p id="mylocation"></p>
 
@@ -104,6 +112,7 @@
             <div class="form-group">
                 <label for="userbeer">  Beer:</label>
                 <select id="userbeer" name="userbeer" class="input-lg select2 form-control">
+                <option></option>
                 {% for r in results %}
                     <option value="{{r[0]}}">{{r[1]}}</option>
                 {% endfor %}
@@ -152,6 +161,9 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="//select2.github.io/select2/select2-3.5.2/select2.js"></script>
 
 <script>
 var x = document.getElementById("mylocation");
@@ -202,16 +214,17 @@ function addFields(){
         }
 </script>
 
-
+<!--
 <script src="//select2.github.io/select2/select2-3.5.2/select2.js"></script>
+-->
 <!-- Placeholder isn't working...oh well -->
+
 <script>
-var placeholder="Pick a beer";
-	$( ".select2" ).select2( { placeholder: placeholder, minimumInputLength: 4} );
+var placeholder="Stone India Pale Ale";
+	$( ".select2" ).select2( { placeholder: placeholder, minimumInputLength: 3} );
 </script>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
+<script src="../static/js/bootstrap.min.js"></script>
 
 
 </html>
