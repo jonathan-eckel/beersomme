@@ -14,12 +14,11 @@
     <!--
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
     -->
-
     <!-- Custom styles for this template -->
 
     <link href="../static/css/mycss_min.css" rel="stylesheet">
     <link href="../static/css/sticky_footer.css" rel="stylesheet">
-    
+    <link href="../static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
     <!--
     <link rel="stylesheet" href="../static/css/slate.css" media="screen">
@@ -31,6 +30,7 @@
 <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
     -->
 
+    <!-- select2, for searchable text box -->
     <!--
     <link href="../static/css/select2-bootstrap.css"/>
     <script src="../static/js/select2.js"></script>
@@ -62,8 +62,8 @@
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li><a href="/">Home</a></li>
-            <li><a href="/about">About Me</a></li>
-            <li class="active"><a href="/slides">Slides</a></li>
+            <li class="active"><a href="/about">About Me</a></li>
+            <li><a href="/slides">Slides</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -72,14 +72,16 @@
 <br><br>
 
  <div class="container">
-
-
-    <iframe src="//www.slideshare.net/slideshow/embed_code/44289024" 
-        width="476" height="400" frameborder="0"
-        marginwidth="0" marginheight="0" scrolling="no"></iframe>
-
-  
-
+                    <div class="jumbotron col-lg-4 text-center" style="background-color: rgba(0,0,0,0.4);">
+                        <img src="../static/img/jonathan_eckel.jpg" class="img-responsive img-circle center-block" alt="">
+                        <h3>Jonathan Eckel</h3>
+                        <ul class="list-inline social-buttons">
+                            <li><a href="https://www.linkedin.com/in/jonathaneckel" target="_blank"><i class="fa fa-linkedin"></i></a>
+                            </li>
+                            <li><a href="https://github.com/jonathan-eckel" target="_blank"><i class="fa fa-github"></i></a>
+                            </li>
+                        </ul> 
+                    </div>
     </div> <!-- /.container-->
 
 
@@ -99,7 +101,6 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="../static/js/bootstrap.min.js"></script>
 

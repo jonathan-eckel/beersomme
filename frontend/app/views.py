@@ -43,6 +43,11 @@ def slides():
     results = None
     return render_template("slides.html", results=results)
 
+@app.route('/about')
+def about():
+    results = None
+    return render_template("about.html", results=results)
+
 @app.route('/slate')
 def slate():
     return render_template("slate.html")
