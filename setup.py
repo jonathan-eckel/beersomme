@@ -114,7 +114,7 @@ keywords = vectorizer.get_feature_names()
 counts = X.sum(axis=0)
 counts = np.array(counts.T).squeeze()
 wc = zip(keywords,counts)
-print wc
+print "N features:", len(keywords)
 
 #no stemming for now
 
