@@ -114,13 +114,14 @@ keywords = vectorizer.get_feature_names()
 counts = X.sum(axis=0)
 counts = np.array(counts.T).squeeze()
 wc = zip(keywords,counts)
+print wc
 
 #no stemming for now
 
 #compute cosine similarity matrix
 cs = cosine_similarity(X)
 # save it as .npy file
-np.save("frontend/data/similarity",cs)
+np.save("beersomme/data/similarity",cs)
 
 print "Size of similarity matrix"
 print cs.shape
@@ -128,7 +129,7 @@ print "Number of items"
 print len(corpus)
 
 #save pandas df to pickle
-df.to_pickle("frontend/data/beerDataFrame.pkl")
+df.to_pickle("beersomme/data/beerDataFrame.pkl")
 
 #update mysql database
 db = mdb.connect(user="jeckel", passwd="data", host="localhost", db="beerdb", charset='utf8')
