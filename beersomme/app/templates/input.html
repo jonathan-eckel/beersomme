@@ -85,12 +85,12 @@
     <div class = "container">
 
         <div class="row">
-            <form  action="/output" method="GET" id="inputform">
+            <form name="myform" action="/output" method="GET" id="inputform">
             <div class="col-lg-10 col-md-10 col-sm-10">
             <div class="form-group">
             <label for="userloc">Address:</label>
             <div class="input-group">
-                <input id="address" type="text" class="form-control input" id="userloc" name='userloc' required=True placeholder="35 E 21st St, New York, NY">
+                <input id="address" type="text" class="form-control input" id="userloc" name='userloc' required=True placeholder="Enter a location: e.g. Union Square, New York, NY">
                   <span class="input-group-btn">
                     <label for="mybutton">a</label>
                     <button type="button" class="btn btn-default" onclick="getLocation()">
@@ -110,7 +110,7 @@
         <p id="mylocation"></p>
 
         </div>
-            <div class="form-group">
+            <div class="form-group" >
                 <label for="userbeer">  Beer:</label>
                 <select id="userbeer" name="userbeer" class="input-lg select2 form-control">
                 <option></option>
@@ -121,7 +121,7 @@
             </div>
 
         <div>
-          <button type="submit" class="btn btn-default btn-lg">Find a bar!</button>
+          <button id="mySubmitButton" type="submit" class="btn btn-default btn-lg">Find a bar!</button>
         </div>
 
       </form>
@@ -218,12 +218,25 @@ function addFields(){
 <!--
 <script src="//select2.github.io/select2/select2-3.5.2/select2.js"></script>
 -->
-<!-- Placeholder isn't working...oh well -->
 
 <script>
-var placeholder="Stone India Pale Ale";
-	$( ".select2" ).select2( { placeholder: placeholder, minimumInputLength: 3} );
+var placeholder="Choose a beer: e.g. Stone India Pale Ale";
+	$( ".select2" ).select2( { 
+	placeholder: placeholder,
+	minimumInputLength: 3,
+    } );
+    // if no beer chosen, default to stone IPA
+    $(document).ready(function(){
+    $("#mySubmitButton").click(function(){
+        if ( ! $("#userbeer").val() ) {
+            $( ".select2" ).select2('val', $(".select2 option[value*='1195']").val());
+        }
+    });
+});
+    
 </script>
+
+
 
 <script src="../static/js/bootstrap.min.js"></script>
 
