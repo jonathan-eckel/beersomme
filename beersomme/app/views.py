@@ -14,30 +14,6 @@ db = mdb.connect(user="jeckel", passwd="data",
 similarity = np.load("data/similarity.npy", mmap_mode="r")
 df = pd.read_pickle("data/beerDataFrame.pkl")
 
-@app.route('/db')
-def cities_page():
-    with db:
-        cur = db.cursor()
-        cur.execute("SELECT Name FROM City LIMIT 15;")
-        query_results = cur.fetchall()
-    cities = ""
-    for result in query_results:
-        cities += result[0]
-        cities += "<br>"
-    return cities
-
-@app.route("/db_fancy")
-def cities_page_fancy():
-    with db:
-        cur = db.cursor()
-        cur.execute("SELECT Name, CountryCode, Population FROM City ORDER BY Population LIMIT 15;")
-
-        query_results = cur.fetchall()
-    cities = []
-    for result in query_results:
-        cities.append(dict(name=result[0], country=result[1], population=result[2]))
-    return render_template('cities.html', cities=cities)
-
 @app.route('/slides')
 def slides():
     results = None
@@ -48,12 +24,7 @@ def about():
     results = None
     return render_template("about.html", results=results)
 
-@app.route('/slate')
-def slate():
-    return render_template("slate.html")
-
 @app.route('/')
-#@app.route('/index')
 @app.route('/input')
 def beersomme_input():
     results = None
