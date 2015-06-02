@@ -1,120 +1,18 @@
-
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Find a bar, drink awesome beer! - beersomme</title>
-
-    <!-- Bootstrap core CSS -->
-    <!--
-    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
-    -->
-
-    <!-- Custom styles for this template -->
-
-    <link href="../static/css/mycss_min.css" rel="stylesheet">
-    <link href="../static/css/sticky_footer.css" rel="stylesheet">
-    
-
-    <!--
-    <link rel="stylesheet" href="../static/css/slate.css" media="screen">
-    <link rel="stylesheet" href="../static/css/slate.min.css">
-    -->
-    <!-- jQuery stuff -->
-    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-    <!--    
-<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-    -->
-
-    <!--
-    <link href="../static/css/select2-bootstrap.css"/>
-    <script src="../static/js/select2.js"></script>
-    -->
-    
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-    
-    <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-63024055-1', 'auto');
-  ga('send', 'pageview');
-
-</script>
-    
-  </head>
-
-  <body>
-    
-    <div id="wrap">
-
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/">beersomme</a>
-        </div>
-        <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li><a href="/">Home</a></li>
-            <li><a href="/about">About Me</a></li>
-            <li class="active"><a href="/slides">Slides</a></li>
-          </ul>
-        </div><!--/.nav-collapse -->
-      </div>
-    </nav>
-
-<br><br>
-
+{% extends "base.html" %}
+{% block content %}
  <div class="container">
-
-
     <iframe src="//www.slideshare.net/slideshow/embed_code/44289024" 
         width="476" height="400" frameborder="0"
         marginwidth="0" marginheight="0" scrolling="no"></iframe>
 
-  
-
     </div> <!-- /.container-->
+{% endblock %}
 
-
-    <div id="push"></div>
-
-    </div>
-
-<div id="footer">
-<div class="container">
-<p><a href="https://www.flickr.com/photos/katarzynab/3360111942">Background photo</a> taken by <a href="https://www.flickr.com/photos/katarzynab/">katarzynab</a> and made available under an <a href="https://creativecommons.org/licenses/by-nd/2.0/">Attribution-NoDerivs 2.0 Generic License</a></p>
-</div>
-</div>
-  </body>
-
-
-
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
-
-
-</html>
-
+{% block endScripts %}
+    {{ super() }}
+    <script type="text/javascript">
+        window.onload=function () {
+            $('#slides').addClass('active');
+            };
+    </script>
+{% endblock %}
