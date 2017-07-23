@@ -65,7 +65,7 @@ df = df[df.description.str.len() > 40]
 df = df.drop_duplicates()
 
 #sort df by style for debugging purposes
-df = df.sort(columns='Style')
+#df = df.sort(columns='Style')
 
 #total corpus of descriptions
 corpus = df['description']
@@ -86,6 +86,9 @@ def myDecode(myStr):
     a = unicode(myStr).encode("UTF-8")
     a = a.decode("ASCII", errors="ignore")
     return a.replace('\n', " ")
+
+# deal with unicode:
+df.loc[:, "name"] = df.name.str.encode("utf-8").str.decode("ascii", errors="ignore")
 
 # run vectorizer once to remove words that don't match
 mycorpus = map(myDecode, corpus.values)
